@@ -1,0 +1,364 @@
+
+<style>
+  :root {
+    --navy:#0a1628;--panel:#111e35;--panel2:#162544;--gold:#c9a84c;--gold2:#f0c96e;
+    --green:#00c97a;--red:#e84a6a;--blue:#4d9fff;--muted:#6a80a0;
+    --border:rgba(201,168,76,0.18);
+  }
+  body{background:var(--navy);color:#dde4f0;font-family:'Barlow Condensed',sans-serif;margin:0;padding:0;}
+  *{box-sizing:border-box;}
+  #app{max-width:960px;margin:0 auto;padding:0 0 3rem;}
+  .topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:0.7rem 1.2rem;display:flex;align-items:center;justify-content:space-between;}
+  .logo{font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:900;letter-spacing:3px;color:var(--gold);}
+  .logo small{color:var(--muted);font-size:0.55rem;display:block;letter-spacing:2px;margin-top:2px;}
+  .clock{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);}
+  .tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{font-family:'Orbitron',monospace;font-size:0.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:0.85rem 1.1rem;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+  .tab:hover{color:var(--gold2);}
+  .tab.on{color:var(--gold);border-bottom-color:var(--gold);}
+  .sec{display:none;padding:1.2rem;}
+  .sec.on{display:block;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1.2rem;margin-bottom:1rem;position:relative;overflow:hidden;}
+  .card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--gold),transparent);}
+  .ctitle{font-family:'Orbitron',monospace;font-size:0.55rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.6rem;}
+  .ctitle::after{content:'';flex:1;height:1px;background:var(--border);}
+  .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.8rem;margin-bottom:1rem;}
+  .sbox{background:var(--panel2);border:1px solid rgba(77,159,255,0.12);border-radius:7px;padding:1rem;}
+  .slbl{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;}
+  .snum{font-family:'Orbitron',monospace;font-weight:700;font-size:1.45rem;line-height:1;}
+  .snum.g{color:var(--green);} .snum.r{color:var(--red);} .snum.o{color:var(--gold2);} .snum.b{color:var(--blue);}
+  .snote{font-size:0.72rem;color:var(--muted);margin-top:0.25rem;}
+  .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin-bottom:0.8rem;}
+  .field{display:flex;flex-direction:column;gap:0.3rem;}
+  .field label{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+  .field input{background:#080f1c;border:1px solid rgba(255,255,255,0.07);border-radius:4px;color:#dde4f0;font-family:'DM Mono',monospace;font-size:0.85rem;padding:0.5rem 0.7rem;outline:none;width:100%;transition:border-color 0.2s;}
+  .field input:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,168,76,0.1);}
+  .field input.co{color:var(--gold2);border-color:rgba(201,168,76,0.12);cursor:default;}
+  .field input.cg{color:var(--green);border-color:rgba(0,201,122,0.12);cursor:default;}
+  .field input.cr{color:var(--red);border-color:rgba(232,74,106,0.12);cursor:default;}
+  .slabel{font-family:'Orbitron',monospace;font-size:0.5rem;font-weight:700;letter-spacing:2px;color:#080f1c;background:var(--gold);display:inline-block;padding:0.18rem 0.6rem;border-radius:3px;margin:0.6rem 0 0.7rem;}
+  .div{height:1px;background:var(--border);margin:1rem 0;}
+  table.t{width:100%;border-collapse:collapse;font-size:0.82rem;}
+  table.t th{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:0.5rem 0.6rem;border-bottom:1px solid var(--border);}
+  table.t td{padding:0.6rem 0.6rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+  table.t .lbl{color:#dde4f0;font-weight:500;}
+  table.t .val{font-family:'DM Mono',monospace;font-size:0.78rem;text-align:right;color:var(--gold2);}
+  table.t .note{color:var(--muted);font-size:0.75rem;}
+  table.t .tot td{background:rgba(201,168,67,0.07);font-weight:700;border-top:1px solid var(--border);}
+  table.t .tot .val{color:var(--gold);font-size:0.9rem;}
+  table.t .net td{background:rgba(0,201,122,0.06);font-weight:700;border-top:1px solid rgba(0,201,122,0.2);}
+  table.t .net .val{color:var(--green);font-size:0.95rem;}
+  .bdg{font-family:'DM Mono',monospace;font-size:0.55rem;padding:0.15rem 0.45rem;border-radius:3px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+  .bdg-g{background:rgba(0,201,122,0.12);color:var(--green);}
+  .bdg-r{background:rgba(232,74,106,0.12);color:var(--red);}
+  .bdg-o{background:rgba(201,168,76,0.12);color:var(--gold2);}
+  .pb-wrap{margin-bottom:0.9rem;}
+  .pb-top{display:flex;justify-content:space-between;margin-bottom:0.3rem;font-size:0.8rem;}
+  .pb-name{color:#dde4f0;font-weight:500;}
+  .pb-pct{font-family:'DM Mono',monospace;color:var(--gold);font-size:0.72rem;}
+  .pb-track{height:5px;background:#080f1c;border-radius:3px;overflow:hidden;}
+  .pb-fill{height:100%;border-radius:3px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1);}
+  .pb-bot{display:flex;justify-content:space-between;margin-top:0.25rem;font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);}
+  .btn{font-family:'Orbitron',monospace;font-weight:700;font-size:0.55rem;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:4px;padding:0.6rem 1.2rem;cursor:pointer;transition:all 0.18s;}
+  .btn-g{background:var(--gold);color:#080f1c;}
+  .btn-g:hover{background:var(--gold2);transform:translateY(-1px);}
+  .btn-row{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem;}
+  .cal-item{display:flex;align-items:center;gap:0.8rem;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+  .cal-dt{font-family:'Orbitron',monospace;font-weight:700;font-size:0.65rem;color:var(--gold);min-width:46px;text-align:center;background:rgba(201,168,76,0.1);border-radius:4px;padding:0.25rem 0.4rem;}
+  .cal-act{flex:1;font-size:0.85rem;}
+  .cal-amt{font-family:'DM Mono',monospace;font-size:0.78rem;}
+  .alert-o{background:rgba(201,168,76,0.08);border-left:2px solid var(--gold);color:var(--gold2);border-radius:4px;padding:0.7rem 0.9rem;font-size:0.82rem;margin-bottom:0.8rem;line-height:1.5;}
+  .toast{position:fixed;bottom:1.2rem;right:1.2rem;background:var(--panel2);border:1px solid var(--green);color:var(--green);font-family:'DM Mono',monospace;font-size:0.72rem;padding:0.6rem 1rem;border-radius:5px;z-index:999;opacity:0;transform:translateY(6px);transition:all 0.25s;pointer-events:none;}
+  .toast.show{opacity:1;transform:none;}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<div id="app">
+  <div class="topbar">
+    <div class="logo">FATORMA // BUDGET COMMAND<small>E-4 &nbsp;|&nbsp; 11TH ABN DIV &nbsp;|&nbsp; FORT WAINWRIGHT AK</small></div>
+    <div class="clock" id="clk"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="go('ov',this)">Overview</button>
+    <button class="tab" onclick="go('pay',this)">Pay & LES</button>
+    <button class="tab" onclick="go('exp',this)">Expenses</button>
+    <button class="tab" onclick="go('debt',this)">Debt</button>
+    <button class="tab" onclick="go('sav',this)">Savings</button>
+    <button class="tab" onclick="go('cal',this)">Calendar</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="sec on" id="sec-ov">
+    <div class="sgrid">
+      <div class="sbox"><div class="slbl">Monthly Net Pay</div><div class="snum g" id="ov-net">$0</div><div class="snote">After all deductions</div></div>
+      <div class="sbox"><div class="slbl">Total Expenses</div><div class="snum r" id="ov-exp">$0</div><div class="snote">All bills & payments</div></div>
+      <div class="sbox"><div class="slbl">Monthly Savings</div><div class="snum b" id="ov-sav">$0</div><div class="snote">1st + 15th deposits</div></div>
+      <div class="sbox"><div class="slbl">Remaining Cash</div><div class="snum o" id="ov-rem">$0</div><div class="snote">After expenses + savings</div></div>
+    </div>
+    <div class="card"><div class="ctitle">Budget Allocation</div><div id="hbars"></div></div>
+    <div class="card"><div class="ctitle">Monthly Snapshot</div><table class="t"><thead><tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">% of Net</th></tr></thead><tbody id="snap"></tbody></table></div>
+    <div class="card"><div class="ctitle">Debt at a Glance</div><div class="sgrid" id="debt-ov"></div></div>
+  </div>
+
+  <!-- PAY -->
+  <div class="sec" id="sec-pay">
+    <div class="card">
+      <div class="ctitle">Gross Entitlements</div>
+      <div class="alert-o">Numbers from your March 2026 LES. Base pay updated to E-4 ($3,303.00). Update any line if your LES changes.</div>
+      <div class="fgrid">
+        <div class="field"><label>Base Pay (E-4)</label><input type="number" id="basePay" value="3303.00" oninput="calc()"/></div>
+        <div class="field"><label>BAS</label><input type="number" id="bas" value="476.95" oninput="calc()"/></div>
+        <div class="field"><label>BAH</label><input type="number" id="bah" value="879.71" oninput="calc()"/></div>
+        <div class="field"><label>COLA (Fairbanks)</label><input type="number" id="cola" value="549.96" oninput="calc()"/></div>
+      </div>
+      <div class="slabel">LES Deductions</div>
+      <div class="fgrid">
+        <div class="field"><label>Roth TSP (10% base)</label><input type="number" id="tsp" value="330.30" oninput="calc()"/></div>
+        <div class="field"><label>Federal Tax</label><input type="number" id="fedTax" value="180.10" oninput="calc()"/></div>
+        <div class="field"><label>FICA Soc Security</label><input type="number" id="fica1" value="186.93" oninput="calc()"/></div>
+        <div class="field"><label>FICA Medicare</label><input type="number" id="fica2" value="43.72" oninput="calc()"/></div>
+        <div class="field"><label>Ohio State Tax</label><input type="number" id="stateTax" value="87.95" oninput="calc()"/></div>
+        <div class="field"><label>SGLI</label><input type="number" id="sgli" value="6.00" oninput="calc()"/></div>
+        <div class="field"><label>SGLI Fam/Spouse</label><input type="number" id="sgliFam" value="4.00" oninput="calc()"/></div>
+        <div class="field"><label>AFRH</label><input type="number" id="afrh" value="0.50" oninput="calc()"/></div>
+      </div>
+      <div class="slabel">Calculated</div>
+      <div class="fgrid">
+        <div class="field"><label>Total Gross</label><input readonly class="co" id="out-gross"/></div>
+        <div class="field"><label>Total Deductions</label><input readonly class="cr" id="out-ded"/></div>
+        <div class="field"><label>Mid-Month Pay (LES)</label><input type="number" id="midPay" value="1978.52" oninput="calc()"/></div>
+        <div class="field"><label>EOM Pay (Est.)</label><input readonly class="cg" id="out-eom"/></div>
+      </div>
+      <div class="div"></div>
+      <div class="ctitle">Pay Breakdown</div>
+      <table class="t"><thead><tr><th>Line Item</th><th style="text-align:right">Monthly</th><th style="text-align:right">1st (Mid-Mo)</th><th style="text-align:right">15th (EOM)</th></tr></thead><tbody id="pay-tbl"></tbody></table>
+      <div class="btn-row"><button class="btn btn-g" onclick="saveData()">Save Data</button></div>
+    </div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="sec" id="sec-exp">
+    <div class="card">
+      <div class="ctitle">Debt Payments</div>
+      <div class="fgrid">
+        <div class="field"><label>AMEX (monthly)</label><input type="number" id="exp-amex" value="200" oninput="calc()"/></div>
+        <div class="field"><label>Chase Freedom Unlimited</label><input type="number" id="exp-c1" value="130" oninput="calc()"/></div>
+        <div class="field"><label>Prime Visa</label><input type="number" id="exp-c2" value="130" oninput="calc()"/></div>
+        <div class="field"><label>BNPL / Amazon Plan</label><input type="number" id="exp-bnpl" value="539.99" oninput="calc()"/></div>
+      </div>
+      <div class="slabel">Fixed</div>
+      <div class="fgrid">
+        <div class="field"><label>Braces (ends Oct 2026)</label><input type="number" id="exp-braces" value="324" oninput="calc()"/></div>
+        <div class="field"><label>Insurance (total/mo)</label><input type="number" id="exp-ins" value="54" oninput="calc()"/></div>
+      </div>
+      <div class="slabel">Subscriptions & Bills</div>
+      <div class="fgrid">
+        <div class="field"><label>Phone</label><input type="number" id="exp-phone" value="90" oninput="calc()"/></div>
+        <div class="field"><label>Claude AI</label><input type="number" id="exp-claude" value="20" oninput="calc()"/></div>
+        <div class="field"><label>Spotify</label><input type="number" id="exp-spotify" value="12" oninput="calc()"/></div>
+        <div class="field"><label>Amazon Prime</label><input type="number" id="exp-amazon" value="14" oninput="calc()"/></div>
+        <div class="field"><label>Netflix</label><input type="number" id="exp-netflix" value="17" oninput="calc()"/></div>
+      </div>
+      <div class="slabel">Variable — Enter Monthly</div>
+      <div class="alert-o">These are blank. Fill them in based on your actual spending each month.</div>
+      <div class="fgrid">
+        <div class="field"><label>Groceries / Food</label><input type="number" id="exp-food" placeholder="$0.00" oninput="calc()"/></div>
+        <div class="field"><label>Gas / Transportation</label><input type="number" id="exp-gas" placeholder="$0.00" oninput="calc()"/></div>
+        <div class="field"><label>Personal / Misc</label><input type="number" id="exp-misc" placeholder="$0.00" oninput="calc()"/></div>
+        <div class="field"><label>Extra</label><input type="number" id="exp-extra" placeholder="$0.00" oninput="calc()"/></div>
+      </div>
+      <div class="div"></div>
+      <div class="ctitle">Expense Summary</div>
+      <table class="t"><thead><tr><th>Category</th><th style="text-align:right">Monthly</th><th style="text-align:right">1st</th><th style="text-align:right">15th</th></tr></thead><tbody id="exp-tbl"></tbody></table>
+      <div class="btn-row"><button class="btn btn-g" onclick="saveData()">Save Data</button></div>
+    </div>
+  </div>
+
+  <!-- DEBT -->
+  <div class="sec" id="sec-debt">
+    <div class="card">
+      <div class="ctitle">Credit Cards</div>
+      <div class="fgrid">
+        <div class="field"><label>AMEX Balance</label><input type="number" id="d-amex" value="2348.00" oninput="calc()"/></div>
+        <div class="field"><label>AMEX Monthly Payment</label><input type="number" id="d-amex-pay" value="200" oninput="calc()"/></div>
+        <div class="field"><label>Freedom Unlimited Balance</label><input type="number" id="d-c1" value="924.11" oninput="calc()"/></div>
+        <div class="field"><label>Freedom Unlimited Payment</label><input type="number" id="d-c1-pay" value="130" oninput="calc()"/></div>
+        <div class="field"><label>Prime Visa Balance</label><input type="number" id="d-c2" value="1359.31" oninput="calc()"/></div>
+        <div class="field"><label>Prime Visa Payment</label><input type="number" id="d-c2-pay" value="130" oninput="calc()"/></div>
+      </div>
+      <div class="slabel">Other Debt</div>
+      <div class="fgrid">
+        <div class="field"><label>BNPL Balance</label><input type="number" id="d-bnpl" value="1623.51" oninput="calc()"/></div>
+        <div class="field"><label>BNPL Monthly Payment</label><input type="number" id="d-bnpl-pay" value="539.99" oninput="calc()"/></div>
+      </div>
+      <div class="div"></div>
+      <div class="ctitle">Debt Dashboard</div>
+      <table class="t"><thead><tr><th>Account</th><th style="text-align:right">Balance</th><th style="text-align:right">Payment</th><th style="text-align:right">Payoff Est.</th><th>Status</th></tr></thead><tbody id="debt-tbl"></tbody></table>
+      <div class="div"></div>
+      <div class="ctitle">Payoff Progress</div>
+      <div id="debt-bars"></div>
+      <div class="btn-row"><button class="btn btn-g" onclick="saveData()">Save Data</button></div>
+    </div>
+  </div>
+
+  <!-- SAVINGS -->
+  <div class="sec" id="sec-sav">
+    <div class="card">
+      <div class="ctitle">Savings Deposits</div>
+      <div class="alert-o">$500 on the 1st + $500 on the 15th = $1,000/month into savings.</div>
+      <div class="fgrid">
+        <div class="field"><label>1st Paycheck Deposit</label><input type="number" id="sav1" value="500" oninput="calc()"/></div>
+        <div class="field"><label>15th Paycheck Deposit</label><input type="number" id="sav15" value="500" oninput="calc()"/></div>
+        <div class="field"><label>Total Monthly Savings</label><input readonly class="cg" id="sav-total"/></div>
+      </div>
+      <div class="slabel">Goals — Update Balances Monthly</div>
+      <div class="fgrid">
+        <div class="field"><label>Emergency Fund Saved</label><input type="number" id="g-emerg" value="0" oninput="calc()"/></div>
+        <div class="field"><label>Emergency Fund Target</label><input type="number" id="gt-emerg" value="5000" oninput="calc()"/></div>
+        <div class="field"><label>ETS Transition Saved</label><input type="number" id="g-ets" value="0" oninput="calc()"/></div>
+        <div class="field"><label>ETS Transition Target</label><input type="number" id="gt-ets" value="3000" oninput="calc()"/></div>
+        <div class="field"><label>ETF / VOO Invested</label><input type="number" id="g-etf" value="0" oninput="calc()"/></div>
+        <div class="field"><label>ETF Target</label><input type="number" id="gt-etf" value="1200" oninput="calc()"/></div>
+        <div class="field"><label>Green-to-Gold Saved</label><input type="number" id="g-g2g" value="0" oninput="calc()"/></div>
+        <div class="field"><label>Green-to-Gold Target</label><input type="number" id="gt-g2g" value="500" oninput="calc()"/></div>
+      </div>
+      <div class="div"></div>
+      <div class="ctitle">Goal Progress</div>
+      <div id="goal-bars"></div>
+      <div class="btn-row"><button class="btn btn-g" onclick="saveData()">Save Data</button></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="sec" id="sec-cal">
+    <div class="card"><div class="ctitle">1st of Month</div><div id="cal1"></div></div>
+    <div class="card"><div class="ctitle">15th of Month</div><div id="cal15"></div></div>
+    <div class="card"><div class="ctitle">Other Due Dates</div><div id="cal-oth"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEYS=['basePay','bas','bah','cola','tsp','fedTax','fica1','fica2','stateTax','sgli','sgliFam','afrh','midPay',
+'exp-amex','exp-c1','exp-c2','exp-bnpl','exp-braces','exp-ins','exp-phone','exp-claude','exp-spotify','exp-amazon','exp-netflix',
+'exp-food','exp-gas','exp-misc','exp-extra',
+'d-amex','d-amex-pay','d-c1','d-c1-pay','d-c2','d-c2-pay','d-bnpl','d-bnpl-pay',
+'sav1','sav15','g-emerg','gt-emerg','g-ets','gt-ets','g-etf','gt-etf','g-g2g','gt-g2g'];
+
+function loadData(){KEYS.forEach(k=>{const el=document.getElementById(k),v=localStorage.getItem('bv2_'+k);if(el&&v!=null)el.value=v;});}
+function saveData(){KEYS.forEach(k=>{const el=document.getElementById(k);if(el)localStorage.setItem('bv2_'+k,el.value);});showToast('Saved to browser');}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function go(id,btn){document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));document.getElementById('sec-'+id).classList.add('on');btn.classList.add('on');calc();}
+
+const g=id=>parseFloat(document.getElementById(id)?.value)||0;
+const f=n=>'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const p=(a,b)=>b?(Math.min(a/b*100,100).toFixed(1)+'%'):'0%';
+const po=(bal,pmt)=>{if(!pmt||pmt<=0)return '???';if(bal<=0)return 'Paid';return Math.ceil(bal/pmt)+' mo';};
+const setO=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+
+function calc(){
+  const base=g('basePay'),bas=g('bas'),bah=g('bah'),cola=g('cola');
+  const tsp=g('tsp'),fed=g('fedTax'),f1=g('fica1'),f2=g('fica2'),st=g('stateTax'),sgli=g('sgli'),sglif=g('sgliFam'),afrh=g('afrh');
+  const mid=g('midPay');
+  const gross=base+bas+bah+cola;
+  const totalDed=tsp+fed+f1+f2+st+sgli+sglif+afrh;
+  const netMo=gross-totalDed;
+  const eom=netMo-mid;
+  setO('out-gross',f(gross));setO('out-ded',f(totalDed));setO('out-eom',f(eom));
+
+  const eAmex=g('exp-amex'),eC1=g('exp-c1'),eC2=g('exp-c2'),eBnpl=g('exp-bnpl');
+  const eBr=g('exp-braces'),eIns=g('exp-ins');
+  const ePh=g('exp-phone'),eCl=g('exp-claude'),eSp=g('exp-spotify'),eAm=g('exp-amazon'),eNf=g('exp-netflix');
+  const eFood=g('exp-food'),eGas=g('exp-gas'),eMisc=g('exp-misc'),eExtra=g('exp-extra');
+  const debtP=eAmex+eC1+eC2+eBnpl,fixP=eBr+eIns,subP=ePh+eCl+eSp+eAm+eNf,varP=eFood+eGas+eMisc+eExtra;
+  const totalExp=debtP+fixP+subP+varP;
+
+  const sv1=g('sav1'),sv15=g('sav15'),savMo=sv1+sv15;
+  setO('sav-total',f(savMo));
+
+  const rem=netMo-totalExp-savMo;
+
+  const dA=g('d-amex'),dAP=g('d-amex-pay'),dC1=g('d-c1'),dC1P=g('d-c1-pay'),dC2=g('d-c2'),dC2P=g('d-c2-pay'),dB=g('d-bnpl'),dBP=g('d-bnpl-pay');
+  const totalDebt=dA+dC1+dC2+dB;
+
+  document.getElementById('ov-net').textContent=f(netMo);
+  document.getElementById('ov-exp').textContent=f(totalExp);
+  document.getElementById('ov-sav').textContent=f(savMo);
+  const re=document.getElementById('ov-rem');re.textContent=f(rem);re.className='snum '+(rem>=0?'o':'r');
+
+  document.getElementById('hbars').innerHTML=
+    hb('Debt Payments',debtP,netMo,'#e84a6a')+hb('Fixed',fixP,netMo,'#c9a84c')+
+    hb('Subscriptions',subP,netMo,'#4d9fff')+hb('Variable',varP,netMo,'#c9a84c')+
+    hb('Savings',savMo,netMo,'#00c97a')+hb('Remaining',Math.max(rem,0),netMo,'#00c97a');
+
+  document.getElementById('snap').innerHTML=
+    sr('Debt Payments',debtP,netMo,'#e84a6a')+sr('Fixed',fixP,netMo,'#c9a84c')+
+    sr('Subscriptions',subP,netMo,'#4d9fff')+sr('Variable',varP,netMo,'#c9a84c')+
+    sr('Savings',savMo,netMo,'#00c97a')+
+    `<tr class="tot"><td class="lbl">Total Out</td><td class="val">${f(totalExp+savMo)}</td><td class="val">${p(totalExp+savMo,netMo)}</td></tr>`+
+    `<tr class="net"><td class="lbl" style="color:${rem>=0?'var(--green)':'var(--red)'}">Remaining</td><td class="val" style="color:${rem>=0?'var(--green)':'var(--red)'}">${f(rem)}</td><td class="val" style="color:${rem>=0?'var(--green)':'var(--red)'}">${p(Math.max(rem,0),netMo)}</td></tr>`;
+
+  document.getElementById('debt-ov').innerHTML=
+    `<div class="sbox"><div class="slbl">AMEX</div><div class="snum r">${f(dA)}</div><div class="snote">${f(dAP)}/mo</div></div>`+
+    `<div class="sbox"><div class="slbl">Freedom</div><div class="snum r">${f(dC1)}</div><div class="snote">${f(dC1P)}/mo</div></div>`+
+    `<div class="sbox"><div class="slbl">Prime Visa</div><div class="snum r">${f(dC2)}</div><div class="snote">${f(dC2P)}/mo</div></div>`+
+    `<div class="sbox"><div class="slbl">BNPL</div><div class="snum r">${f(dB)}</div><div class="snote">${f(dBP)}/mo</div></div>`+
+    `<div class="sbox"><div class="slbl">Total Debt</div><div class="snum r">${f(totalDebt)}</div><div class="snote">All accounts</div></div>`;
+
+  document.getElementById('pay-tbl').innerHTML=
+    pr('Base Pay',base,'o')+pr('BAS',bas,'b')+pr('BAH',bah,'b')+pr('COLA',cola,'b')+
+    `<tr class="tot"><td class="lbl">Gross</td><td class="val">${f(gross)}</td><td class="val">—</td><td class="val">—</td></tr>`+
+    pr('Roth TSP',-tsp,'r')+pr('Federal Tax',-fed,'r')+pr('FICA SS',-f1,'r')+pr('FICA Med',-f2,'r')+pr('Ohio Tax',-st,'r')+pr('SGLI',-sgli,'r')+pr('SGLI Fam',-sglif,'r')+pr('AFRH',-afrh,'r')+
+    `<tr class="tot"><td class="lbl">Total Deductions</td><td class="val" style="color:var(--red)">${f(totalDed)}</td><td class="val" style="color:var(--red)">—</td><td class="val" style="color:var(--red)">—</td></tr>`+
+    `<tr class="net"><td class="lbl" style="color:var(--green);font-size:0.88rem">NET PAY</td><td class="val" style="color:var(--green);font-size:0.95rem">${f(netMo)}</td><td class="val" style="color:var(--green)">${f(mid)}</td><td class="val" style="color:var(--green)">${f(eom)}</td></tr>`;
+
+  document.getElementById('exp-tbl').innerHTML=
+    er('AMEX (1st)',eAmex,eAmex,0)+er('Chase Freedom',eC1,0,eC1)+er('Prime Visa',eC2,0,eC2)+
+    er('BNPL (1st)',eBnpl,eBnpl,0)+er('Braces',eBr,eBr/2,eBr/2)+er('Insurance',eIns,39,15)+
+    er('Subscriptions',subP,subP,0)+er('Variable',varP,varP/2,varP/2)+
+    `<tr class="tot"><td class="lbl">Total Expenses</td><td class="val">${f(totalExp)}</td><td class="val">—</td><td class="val">—</td></tr>`;
+
+  document.getElementById('debt-tbl').innerHTML=
+    dr('AMEX',dA,dAP,'1st of month','bdg-r')+dr('Chase Freedom',dC1,dC1P,'Auto Apr 15','bdg-g')+
+    dr('Prime Visa',dC2,dC2P,'Auto Apr 20','bdg-g')+dr('BNPL / Amazon',dB,dBP,'1st of month','bdg-o')+
+    `<tr class="tot"><td class="lbl">Total Debt</td><td class="val" style="color:var(--red)">${f(totalDebt)}</td><td class="val" style="color:var(--red)">${f(dAP+dC1P+dC2P+dBP)}/mo</td><td colspan="3"></td></tr>`;
+
+  document.getElementById('debt-bars').innerHTML=
+    db('AMEX',dA,2348,dAP)+db('Chase Freedom',dC1,924.11,dC1P)+db('Prime Visa',dC2,1359.31,dC2P)+db('BNPL',dB,1623.51,dBP);
+
+  document.getElementById('goal-bars').innerHTML=
+    gb('Emergency Fund',g('g-emerg'),g('gt-emerg'))+gb('ETS Transition',g('g-ets'),g('gt-ets'))+
+    gb('ETF / VOO',g('g-etf'),g('gt-etf'))+gb('Green-to-Gold',g('g-g2g'),g('gt-g2g'));
+
+  document.getElementById('cal1').innerHTML=
+    ci('1st','Paycheck hits (mid-month)',f(mid),'#00c97a')+ci('1st','Savings deposit',f(sv1),'#00c97a')+
+    ci('1st','AMEX payment',f(eAmex),'#e84a6a')+ci('1st','BNPL / Amazon Plan',f(eBnpl),'#e84a6a')+
+    ci('1st','Braces',f(eBr/2),'#c9a84c')+ci('1st','Insurance','$39.00','#c9a84c')+
+    ci('1st','Phone',f(ePh),'#4d9fff')+ci('1st','Claude AI',f(eCl),'#4d9fff')+
+    ci('1st','Spotify',f(eSp),'#4d9fff')+ci('1st','Amazon Prime',f(eAm),'#4d9fff')+ci('1st','Netflix',f(eNf),'#4d9fff');
+
+  document.getElementById('cal15').innerHTML=
+    ci('15th','Paycheck hits (EOM)',f(eom),'#00c97a')+ci('15th','Savings deposit',f(sv15),'#00c97a')+
+    ci('15th','Chase Freedom Auto-Pay',f(eC1),'#e84a6a')+ci('15th','Braces',f(eBr/2),'#c9a84c')+ci('15th','Insurance','$15.00','#c9a84c');
+
+  document.getElementById('cal-oth').innerHTML=
+    ci('Apr 20','Prime Visa Auto-Pay',f(eC2),'#e84a6a')+
+    ci('Oct 26','Braces END — redirect $324 to debt','+$324/mo','#00c97a')+
+    ci('Monthly','Review budget vs actuals','Admin','#4d9fff');
+}
+
+function hb(lbl,val,tot,color){const pp=tot?Math.min(val/tot*100,100):0;return `<div class="pb-wrap"><div class="pb-top"><span class="pb-name">${lbl}</span><span class="pb-pct">${pp.toFixed(1)}% — ${f(val)}</span></div><div class="pb-track"><div class="pb-fill" style="width:${pp}%;background:${color}"></div></div></div>`;}
+function sr(lbl,val,net,color){return `<tr><td class="lbl">${lbl}</td><td class="val" style="color:${color}">${f(val)}</td><td class="val" style="color:var(--muted)">${p(val,net)}</td></tr>`;}
+function pr(lbl,val,cls){const c=cls==='g'?'var(--green)':cls==='r'?'var(--red)':'var(--gold2)';const s=val<0?'-':'';return `<tr><td class="lbl">${lbl}</td><td class="val" style="color:${c}">${s}${f(Math.abs(val))}</td><td class="val" style="color:${c}">${s}${f(Math.abs(val)/2)}</td><td class="val" style="color:${c}">${s}${f(Math.abs(val)/2)}</td></tr>`;}
+function er(lbl,mo,fi,ft){return `<tr><td class="lbl">${lbl}</td><td class="val">${f(mo)}</td><td class="val" style="color:var(--muted)">${fi?f(fi):'—'}</td><td class="val" style="color:var(--muted)">${ft?f(ft):'—'}</td></tr>`;}
+function dr(acc,bal,pmt,due,bc){return `<tr><td class="lbl">${acc}</td><td class="val" style="color:var(--red)">${f(bal)}</td><td class="val">${f(pmt)}/mo</td><td class="val" style="color:var(--muted)">${po(bal,pmt)}</td><td><span class="bdg ${bc}">${due}</span></td></tr>`;}
+function db(lbl,cur,orig,pmt){const paid=Math.max(orig-cur,0),pp=orig?Math.min(paid/orig*100,100):0;return `<div class="pb-wrap"><div class="pb-top"><span class="pb-name">${lbl}</span><span class="pb-pct">${pp.toFixed(1)}% paid — ${po(cur,pmt)} left</span></div><div class="pb-track"><div class="pb-fill" style="width:${pp}%;background:var(--green)"></div></div><div class="pb-bot"><span>Remaining: ${f(cur)}</span><span>Original: ${f(orig)}</span></div></div>`;}
+function gb(lbl,saved,target){const pp=target?Math.min(saved/target*100,100):0,rem=Math.max(target-saved,0);return `<div class="pb-wrap"><div class="pb-top"><span class="pb-name">${lbl}</span><span class="pb-pct">${pp.toFixed(1)}%</span></div><div class="pb-track"><div class="pb-fill" style="width:${pp}%;background:var(--gold)"></div></div><div class="pb-bot"><span>Saved: ${f(saved)}</span><span>Need ${f(rem)} more</span></div></div>`;}
+function ci(dt,act,amt,color){return `<div class="cal-item"><div class="cal-dt">${dt}</div><div class="cal-act">${act}</div><div class="cal-amt" style="color:${color}">${amt}</div></div>`;}
+
+setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=n.toLocaleTimeString('en-US',{hour12:false})+' | '+n.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();},1000);
+
+loadData();calc();
+</script>
